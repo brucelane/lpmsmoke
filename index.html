@@ -2,10 +2,12 @@
 <html>
 
 <head>
-    <title>smoke</title>
+    <title>LPM smoke</title>
     <script type="text/javascript" src="lib/three.min.js"></script>
-    <script type="text/javascript" src="lib/jquery-1.9.0.js"></script>
-
+    <!-- script type="text/javascript" src="lib/jquery-1.9.0.js"></script -->
+    <script type="text/javascript" src="lib/stats.min.js"></script>
+    <!-- ShaderParticles -->
+    <script type="text/javascript" src="lib/ShaderParticles.min.js"></script>
     <style>
         body {
             /* set margin to 0 and overflow to hidden, to go fullscreen */
@@ -21,9 +23,156 @@
 </div>
 
 <script type="text/javascript">
+// variables used in init()
+        var scene, camera, renderer, stats, stats2, clock;
 
+        // Used in initParticles()
+        var emitter, particleGroup;
+
+        // Setup the scene
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 10000);
+            camera.position.z = 80;
+            camera.lookAt( scene.position );
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.setClearColor(0x000000);
+
+            //var ambi = new THREE.AmbientLight(0x181818);
+            var ambi = new THREE.AmbientLight(0xf8f8f8);
+            scene.add(ambi);
+
+            var spotLight = new THREE.DirectionalLight(0xffffff);
+            spotLight.position.set(550, 100, 550);
+            spotLight.intensity = 0.6;
+
+            scene.add(spotLight);
+
+            stats = new Stats();
+            clock = new THREE.Clock();
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.top = '0';
+
+            document.body.appendChild( renderer.domElement );
+            document.body.appendChild( stats.domElement );
+        }
+
+        // Create image
+        function initImage() {
+            // lpm logo
+            var lpmTexture = THREE.ImageUtils.loadTexture("assets/lpm.png");
+
+            var lpmMaterial = new THREE.MeshPhongMaterial();
+            lpmMaterial.map = lpmTexture;
+
+            var lpmPlane = new THREE.Mesh(
+                new THREE.PlaneGeometry(70,30,1,1),
+                lpmMaterial
+            );
+            
+            lpmPlane.position.x = 0;
+            lpmPlane.position.y = 0; 
+            lpmPlane.position.z = -20;
+            scene.add( lpmPlane ); 
+
+        }
+
+        // Create particle group and emitter
+        function initParticles() {
+            var texture = THREE.ImageUtils.loadTexture('assets/smokeparticle.png');
+            // texture.magFilter = THREE.LinearMipMapLinearFilter;
+            // texture.minFilter = THREE.LinearMipMapLinearFilter;
+
+            particleGroup = new SPE.Group({
+                texture: texture,
+                maxAge: 5
+            });
+
+            emitter = new SPE.Emitter({
+                type: 'cube',
+                // [OPTIONAL] Base position for the emitter. Can be changed over time.
+                position: new THREE.Vector3(0, 6, 50),
+                // [OPTIONAL] Particle start position variance.
+                positionSpread: new THREE.Vector3(6, 15, 10),
+                // [OPTIONAL] Acceleration base vector.
+                acceleration: new THREE.Vector3(0, 15, 0),
+                // [OPTIONAL] Velocity base vector.
+                velocity: new THREE.Vector3(0, 5, 0),
+                velocitySpread: new THREE.Vector3(50, 0, 0),
+                //particlesPerSecond: 1000,
+                particleCount: 10000,
+                sizeStart: 10,
+                sizeEnd: 0,
+                opacityStart: 0.1,
+                opacityStartSpread: 0,
+
+                // [OPTIONAL] Particle middle opacity.
+                // The opacity value at half a particle's lifecycle.
+                // If not specified, it will be set to halfway between the
+                // `opacityStart` and `opacityEnd` values.
+                opacityMiddle: 0.08,
+
+                // [OPTIONAL] Particle middle opacity variance.
+                opacityMiddleSpread: 0.8,
+                opacityEnd: 0,
+                colorStart: new THREE.Color('black'),
+                colorMiddle: new THREE.Color( 'white' ),
+                colorEnd: new THREE.Color('black')
+            });
+
+            particleGroup.addEmitter( emitter );
+            scene.add( particleGroup.mesh );
+
+            //document.querySelector('.numParticles').textContent = 'Total particles: ' + emitter.numParticles;
+        }
+
+
+
+        function animate() {
+            requestAnimationFrame( animate );
+
+            // Using a fixed time-step here to avoid pauses
+            render( 0.016 );
+            stats.update();
+        }
+
+
+        function render( dt ) {
+            particleGroup.tick( dt );
+            renderer.render( scene, camera );
+
+            //camera.position.x = Math.sin( Date.now() * 0.0005 ) * 150;
+            //camera.position.z = Math.cos( Date.now() * 0.0005 ) * 150;
+            camera.lookAt( scene.position );
+        }
+
+
+        window.addEventListener( 'resize', function() {
+            var w = window.innerWidth,
+                h = window.innerHeight;
+
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize( w, h );
+        }, false );
+
+        init();
+        initImage();
+        initParticles();
+
+        setTimeout(animate, 0);
     // once everything is loaded, we run our Three.js stuff.
-    $(function () {
+    /*$(function () {
+
+        // instanciate stats
+        stats = new Stats();
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.top = '0';
+        document.body.appendChild( stats.domElement );
 
         // create a scene, that will hold all our elements such as objects, cameras and lights.
         var scene = new THREE.Scene();
@@ -33,7 +182,7 @@
 
         // create a render and set the size
         var webGLRenderer = new THREE.WebGLRenderer();
-        webGLRenderer.setClearColorHex(0x000, 1.0);
+        webGLRenderer.setClearColor(0x000000);
         webGLRenderer.setSize(window.innerWidth, window.innerHeight);
         webGLRenderer.shadowMapEnabled = true;
 
@@ -119,7 +268,7 @@
 
         }
 
-    });
+    });*/
 
 
 </script>
