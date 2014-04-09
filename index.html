@@ -46,7 +46,8 @@
 
         var clock = new THREE.Clock();
 
-        var ambi = new THREE.AmbientLight(0x181818);
+        //var ambi = new THREE.AmbientLight(0x181818);
+        var ambi = new THREE.AmbientLight(0xf8f8f8);
         scene.add(ambi);
 
         var spotLight = new THREE.DirectionalLight(0xffffff);
@@ -68,27 +69,26 @@
             new THREE.PlaneGeometry(80,40,1,1),
             lpmMaterial
         );
-        /*lpmPlane.rotation.x = 0*(Math.PI/180);
-        lpmPlane.rotation.y = 0*(Math.PI/180);  
-        lpmPlane.rotation.z = 0*(Math.PI/180); */ 
         
         lpmPlane.position.x = 0;
-        lpmPlane.position.y = 2; 
+        lpmPlane.position.y = -40; 
         lpmPlane.position.z = 2;
         scene.add( lpmPlane ); 
         //particles
         var smokeParticles = new THREE.Geometry;
-        for (var i = 0; i < 2800; i++) {
-            var particle = new THREE.Vector3(Math.random() * 64 - 32, Math.random() * 230, Math.random() * 32 - 16);
+        for (var i = 0; i < 20000; i++) {
+            var particle = new THREE.Vector3(Math.random() * 64 - 32, Math.random() * 230, Math.random() * 4 );
             smokeParticles.vertices.push(particle);
         }
         var smokeTexture = THREE.ImageUtils.loadTexture('assets/smoke.png');
-        var smokeMaterial = new THREE.ParticleBasicMaterial({ map: smokeTexture, opacity: 0.6, transparent: true, blending: THREE.AdditiveBlending, size: 5, color: 0xffffff });
+        var smokeMaterial = new THREE.ParticleBasicMaterial({ map: smokeTexture, opacity: 0.3, transparent: true, blending: THREE.AdditiveBlending, size: 7, color: 0xffffff });
 
         var smoke = new THREE.ParticleSystem(smokeParticles, smokeMaterial);
         smoke.sortParticles = true;
 
-        smoke.position.y = 14;
+        smoke.position.x = 8;
+        smoke.position.y = -30;
+        smoke.position.z = 15;
         scene.add(smoke);
 
         // call the render function
@@ -97,16 +97,18 @@
         function render() {
 
             var delta = clock.getDelta();
-
+            //console.log("delta:" + delta);
             var particleCount = smokeParticles.vertices.length;
             while (particleCount--) {
                 var particle = smokeParticles.vertices[particleCount];
-                particle.y += delta * 50;
+                particle.x += ( Math.random() - 0.5 )  * 0.08 * particle.y;
+                particle.y += delta * 3;
                  
                 if (particle.y >= 230) {
+            //console.log("delta:" + delta);
                     particle.y = Math.random() * 16;
                     particle.x = Math.random() * 64 - 32;
-                    particle.z = Math.random() * 64 - 16;
+                    //particle.z = Math.random() * 64 - 16;
                 }
             }
             smokeParticles.__dirtyVertices = true;
